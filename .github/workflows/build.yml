@@ -28,9 +28,13 @@ jobs:
         run: gradle assembleDebug assembleRelease
 
       - name: Sign Release APK
+        if: env.KEY != ''
+        env:
+          KEY: ${{ secrets.KEY }}
         run: |
+          echo "$KEY" | base64 -d > release.keystore
           APKSIGNER=$(find $ANDROID_HOME/build-tools -name apksigner | sort -V | tail -n 1)
-          $APKSIGNER sign --ks keystore.jks --ks-pass pass:${{ secrets.KEYSTORE_PASSWORD }} --key-pass pass:${{ secrets.KEY_PASSWORD }} --out app-release-signed.apk app/build/outputs/apk/release/app-release-unsigned.apk
+          $APKSIGNER sign --ks release.keystore --ks-pass pass:123456 --key-pass pass:123456 --out app-release-signed.apk app/build/outputs/apk/release/app-release-unsigned.apk
 
       - name: Upload APK Artifacts
         uses: actions/upload-artifact@v4
